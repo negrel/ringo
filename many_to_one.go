@@ -9,7 +9,7 @@ type manyToOne buffer
 // ManyToOne return an efficient buffer with the given capacity.
 // The buffer is safe for one reader and multiple writer.
 func ManyToOne(capacity uint32) Buffer {
-	return &oneToOne{
+	return &manyToOne{
 		head:     ^uint64(0),
 		buffer:   make([]Generic, capacity),
 		capacity: uint64(capacity),
@@ -37,13 +37,26 @@ func (mto *manyToOne) Push(data Generic) {
 // the data is valid.
 func (mto *manyToOne) Shift() (Generic, bool) {
 	i := mto.tail % mto.capacity
-	mto.tail++
 
 	box := (*box)(mto.buffer[i])
 
+	// never written before.
 	if box == nil {
 		return nil, false
 	}
 
-	return box.data, box.index > mto.tail
+	// already readed
+	if box.index < mto.tail {
+		return nil, false
+	}
+
+	// cell have been overwritten
+	if box.index > mto.tail {
+		// set the tail so next shift box.data will be valid
+		mto.tail = box.index
+		return nil, true
+	}
+
+	mto.tail++
+	return box.data, true
 }

@@ -1,12 +1,14 @@
 package ringo
 
 import (
-	"log"
+	"math"
 	"sync"
 	"testing"
 
 	"code.cloudfoundry.org/go-diodes"
 )
+
+var result Generic
 
 func BenchmarkDiodeOneToOne(b *testing.B) {
 	buffer := diodes.NewOneToOne(b.N, nil)
@@ -36,7 +38,7 @@ func BenchmarkOneToOne(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		data, _ := buffer.Shift()
-		_ = data
+		result = data
 	}
 
 }
@@ -82,7 +84,7 @@ func BenchmarkConcurrentOneToOne(b *testing.B) {
 		defer wg.Done()
 		for i := 0; i < b.N; i++ {
 			data, _ := buffer.Shift()
-			_ = data
+			result = data
 		}
 	}()
 
@@ -91,30 +93,37 @@ func BenchmarkConcurrentOneToOne(b *testing.B) {
 
 func BenchmarkConcurrentManyToOne(b *testing.B) {
 	buffer := ManyToOne(uint32(b.N))
+	grc := 4
 
 	var wg sync.WaitGroup
-	wg.Add(b.N)
-
-	b.ResetTimer()
+	wg.Add(grc)
 
 	// 2 concurrent writers.
+	// Avoid b.N / grc = 0
+	loop := float64(b.N)
+	if loop == 1 {
+		loop = float64(grc)
+	}
+	loop /= float64(grc)
+	loopPerGoroutine := int(math.Ceil(loop))
+
 	writer := func() {
-		log.Println("Goroutines for ", b.N)
-		for i := 0; i < b.N/2; i++ {
+		defer wg.Done()
+		for i := 0; i < loopPerGoroutine; i++ {
 			j := i
 			buffer.Push(Generic(&j))
-			wg.Done()
 		}
 	}
 
-	go writer()
-	go writer()
+	b.ResetTimer()
+	for i := 0; i < grc; i++ {
+		go writer()
+	}
 
 	wg.Wait()
 
 	for i := 0; i < b.N; i++ {
 		data, _ := buffer.Shift()
-		_ = data
+		result = data
 	}
-
 }
