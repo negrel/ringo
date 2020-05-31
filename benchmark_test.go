@@ -4,70 +4,11 @@ import (
 	"math"
 	"sync"
 	"testing"
-
-	"code.cloudfoundry.org/go-diodes"
 )
 
 var result Generic
 
-func BenchmarkDiodeOneToOne(b *testing.B) {
-	buffer := diodes.NewOneToOne(b.N, nil)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		y := i
-		buffer.Set(diodes.GenericDataType(&y))
-	}
-
-	for i := 0; i < b.N; i++ {
-		data, _ := buffer.TryNext()
-		_ = data
-	}
-}
-
 func BenchmarkOneToOne(b *testing.B) {
-	buffer := OneToOne(uint32(b.N))
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		y := i
-		buffer.Push(Generic(&y))
-	}
-
-	for i := 0; i < b.N; i++ {
-		data, _ := buffer.Shift()
-		result = data
-	}
-
-}
-
-func BenchmarkConcurrentDiodeOneToOne(b *testing.B) {
-	buffer := diodes.NewOneToOne(b.N, nil)
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		y := i
-		buffer.Set(diodes.GenericDataType(&y))
-	}
-
-	go func() {
-		defer wg.Done()
-		for i := 0; i < b.N; i++ {
-			data, _ := buffer.TryNext()
-			_ = data
-		}
-	}()
-
-	wg.Wait()
-}
-
-func BenchmarkConcurrentOneToOne(b *testing.B) {
 	buffer := OneToOne(uint32(b.N))
 
 	var wg sync.WaitGroup
@@ -91,20 +32,20 @@ func BenchmarkConcurrentOneToOne(b *testing.B) {
 	wg.Wait()
 }
 
-func BenchmarkConcurrentManyToOne(b *testing.B) {
+func BenchmarkManyToOne(b *testing.B) {
 	buffer := ManyToOne(uint32(b.N))
-	grc := 4
+	// Number of concurrent writer
+	wCount := 100
 
 	var wg sync.WaitGroup
-	wg.Add(grc)
+	wg.Add(wCount)
 
-	// 2 concurrent writers.
-	// Avoid b.N / grc = 0
+	// Avoid b.N / rwCount = 0
 	loop := float64(b.N)
 	if loop == 1 {
-		loop = float64(grc)
+		loop = float64(wCount)
 	}
-	loop /= float64(grc)
+	loop /= float64(wCount)
 	loopPerGoroutine := int(math.Ceil(loop))
 
 	writer := func() {
@@ -116,7 +57,7 @@ func BenchmarkConcurrentManyToOne(b *testing.B) {
 	}
 
 	b.ResetTimer()
-	for i := 0; i < grc; i++ {
+	for i := 0; i < wCount; i++ {
 		go writer()
 	}
 
@@ -126,4 +67,50 @@ func BenchmarkConcurrentManyToOne(b *testing.B) {
 		data, _ := buffer.Shift()
 		result = data
 	}
+}
+
+func BenchmarkManyToMany(b *testing.B) {
+	buffer := ManyToMany(uint32(b.N))
+	// Number of concurrent writer
+	rwCount := 100
+
+	var wg sync.WaitGroup
+	wg.Add(rwCount)
+
+	// Avoid b.N / rwCount = 0
+	loop := float64(b.N)
+	if loop == 1 {
+		loop = float64(rwCount)
+	}
+	loop /= float64(rwCount)
+	loopPerGoroutine := int(math.Ceil(loop))
+
+	writer := func() {
+		defer wg.Done()
+		for i := 0; i < loopPerGoroutine; i++ {
+			j := i
+			buffer.Push(Generic(&j))
+		}
+	}
+
+	reader := func() {
+		defer wg.Done()
+		for i := 0; i < loopPerGoroutine; i++ {
+			value, _ := buffer.Shift()
+			_ = value
+		}
+	}
+
+	b.ResetTimer()
+	for i := 0; i < rwCount; i++ {
+		go writer()
+	}
+
+	wg.Wait()
+	wg.Add(rwCount)
+
+	for i := 0; i < rwCount; i++ {
+		go reader()
+	}
+	wg.Wait()
 }

@@ -6,8 +6,11 @@ import (
 
 type manyToOne buffer
 
-// ManyToOne return an efficient buffer with the given capacity.
-// The buffer is safe for one reader and multiple writer.
+// ManyToOne return an efficient ring buffer with the given
+// capacity. The buffer is safe for one reader and multiple writer.
+// The ManyToOne buffer will panic if you use the -race flag
+// because you must use only one reader, no runtime check is performed for
+// better performance.
 func ManyToOne(capacity uint32) Buffer {
 	return &manyToOne{
 		head:     ^uint64(0),
