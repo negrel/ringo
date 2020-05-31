@@ -18,7 +18,7 @@ type buffer struct {
 	buffer []Generic
 	head   uint64
 	tail   uint64
-	// Stored as uint64 to avoid conversion
+	// NOTE Stored as uint64 to avoid conversion
 	// but will never overflow uint32
 	capacity uint64
 }

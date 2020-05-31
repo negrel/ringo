@@ -17,7 +17,7 @@ func ManyToMany(capacity uint32) Buffer {
 	return &manyToMany{
 		buffer: &oneToOne{
 			head:     ^uint64(0),
-			buffer:   make([]Generic, capacity),
+			buffer:   make([]box, capacity),
 			capacity: uint64(capacity),
 		},
 		mutex: sync.Mutex{},

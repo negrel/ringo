@@ -1,12 +1,19 @@
 package ringo
 
-type oneToOne buffer
+type oneToOne struct {
+	buffer []box
+	head   uint64
+	tail   uint64
+	// Stored as uint64 to avoid conversion
+	// but will never overflow uint32
+	capacity uint64
+}
 
 // OneToOne return an efficient buffer with the given capacity.
 // The buffer is safe for one reader and one writer.
 func OneToOne(capacity uint32) Buffer {
 	return &oneToOne{
-		buffer:   make([]Generic, capacity),
+		buffer:   make([]box, capacity),
 		capacity: uint64(capacity),
 	}
 }
@@ -24,17 +31,16 @@ func (oto *oneToOne) Push(data Generic) {
 	}
 
 	oto.head++
-
-	oto.buffer[index] = Generic(&box)
+	oto.buffer[index] = box
 }
 
 func (oto *oneToOne) Shift() (Generic, bool) {
 	index := oto.tail % oto.capacity
 	oto.tail++
 
-	box := (*box)(oto.buffer[index])
+	box := oto.buffer[index]
 
-	if box == nil {
+	if box.data == nil {
 		return nil, false
 	}
 
