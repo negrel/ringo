@@ -1,4 +1,4 @@
-<h1 align="center"><img height="250" src="https://github.com/negrel/ringo/raw/master/.github/atom.png"></h1>
+<h1 align="center"><img height="250" src="https://raw.githubusercontent.com/negrel/ringo/master/.github/atom.svg"></h1>
 
 <p align="center">
 	<a href="https://goreportcard.com/badge/github.com/negrel/ringo">
