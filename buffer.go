@@ -6,8 +6,9 @@ type Buffer interface {
 	Cap() uint32
 
 	// Push the given data to the buffer.
-	// It may overwrite some unreaded data.
-	Push(Generic)
+	// It return whether the push overwrite some
+	// data.
+	Push(Generic) bool
 
 	// Shift data from buffer and return if
 	// the data is valid.

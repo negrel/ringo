@@ -64,11 +64,11 @@ i5-8250U @ 8x 3.4GHz:
 goos: linux
 goarch: amd64
 pkg: github.com/negrel/ringo
-BenchmarkOneToOne-8             21199524                57.6 ns/op             8 B/op          1 allocs/op
-BenchmarkManyToOne-8            11959047                84.3 ns/op            24 B/op          2 allocs/op
-BenchmarkManyToMany-8            2868415               414 ns/op               8 B/op          1 allocs/op
+BenchmarkOneToOne-8             20352619                54.3 ns/op             8 B/op          1 allocs/op
+BenchmarkManyToOne-8            11924336                85.8 ns/op            24 B/op          2 allocs/op
+BenchmarkManyToMany-8            2736511               441 ns/op               8 B/op          1 allocs/op
 PASS
-ok      github.com/negrel/ringo 6.002s
+ok      github.com/negrel/ringo 5.149s
 ```
 
 ## :stars: Show your support

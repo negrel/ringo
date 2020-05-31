@@ -28,10 +28,12 @@ func (mtm *manyToMany) Cap() uint32 {
 	return uint32(mtm.buffer.capacity)
 }
 
-func (mtm *manyToMany) Push(data Generic) {
+func (mtm *manyToMany) Push(data Generic) (overwrite bool) {
 	mtm.mutex.Lock()
-	mtm.buffer.Push(data)
+	overwrite = mtm.buffer.Push(data)
 	mtm.mutex.Unlock()
+
+	return
 }
 
 func (mtm *manyToMany) Shift() (shifted Generic, ok bool) {

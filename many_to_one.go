@@ -23,16 +23,24 @@ func (mto *manyToOne) Cap() uint32 {
 	return uint32(mto.capacity)
 }
 
-func (mto *manyToOne) Push(data Generic) {
+func (mto *manyToOne) Push(data Generic) (overwrite bool) {
 	head := atomic.AddUint64(&mto.head, 1)
 	index := head % mto.capacity
 
-	box := box{
+	pBox := box{
 		index: head,
 		data:  data,
 	}
 
-	atomic.SwapPointer(&mto.buffer[index], Generic(&box))
+	tail1 := atomic.LoadUint64(&mto.tail)
+	old := (*box)(atomic.SwapPointer(&mto.buffer[index], Generic(&pBox)))
+	tail2 := atomic.LoadUint64(&mto.tail)
+
+	if old == nil {
+		return false
+	}
+
+	return old.index > tail1 || old.index > tail2
 }
 
 func (mto *manyToOne) Shift() (Generic, bool) {

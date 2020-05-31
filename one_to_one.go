@@ -22,7 +22,7 @@ func (oto *oneToOne) Cap() uint32 {
 	return uint32(oto.capacity)
 }
 
-func (oto *oneToOne) Push(data Generic) {
+func (oto *oneToOne) Push(data Generic) (overwrite bool) {
 	index := oto.head % uint64(oto.capacity)
 
 	box := box{
@@ -31,7 +31,10 @@ func (oto *oneToOne) Push(data Generic) {
 	}
 
 	oto.head++
+	overwrite = oto.buffer[index].index > oto.tail
 	oto.buffer[index] = box
+
+	return
 }
 
 func (oto *oneToOne) Shift() (Generic, bool) {
