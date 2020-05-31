@@ -1,6 +1,9 @@
 <h1 align="center"><img height="250" src="https://raw.githubusercontent.com/negrel/ringo/master/.github/atom.svg"></h1>
 
 <p align="center">
+	<a href="https://github.com/avelino/awesome-go">
+		<img alt="Mentioned in Awesome Go" src="https://awesome.re/mentioned-badge.svg">
+	</a>
 	<a href="https://pkg.go.dev/github.com/negrel/ringo">
 		<img src="https://godoc.org/github.com/negrel/ringo?status.svg">
 	</a>
@@ -18,9 +21,9 @@ Ringo is inspired by [go-diodes](https://github.com/cloudfoundry/go-diodes/) but
 
 ## Features
 
-- **Thread-safe** : manipulated via [atomics](https://pkg.go.dev/sync/atomic) operations.
-- :zap: [**Efficient**](https://github.com/negrel/ringo#zap-benchmarks)
 - **Easy to use** : Check the [examples](https://github.com/negrel/ringo/tree/master/example)
+- :zap: [**Efficient**](https://github.com/negrel/ringo#zap-benchmarks)
+- **Thread-safe** : manipulated via [atomics](https://pkg.go.dev/sync/atomic) operations.
 - **Untyped** : step around type safety thanks to the standard [unsafe](https://pkg.go.dev/unsafe) package.
 
 ## Installation
