@@ -29,10 +29,10 @@ func (oto *oneToOne) Push(data Generic) {
 }
 
 func (oto *oneToOne) Shift() (Generic, bool) {
-	i := oto.tail % oto.capacity
+	index := oto.tail % oto.capacity
 	oto.tail++
 
-	box := (*box)(oto.buffer[i])
+	box := (*box)(oto.buffer[index])
 
 	if box == nil {
 		return nil, false

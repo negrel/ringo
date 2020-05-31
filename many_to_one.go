@@ -36,9 +36,8 @@ func (mto *manyToOne) Push(data Generic) {
 }
 
 func (mto *manyToOne) Shift() (Generic, bool) {
-	i := mto.tail % mto.capacity
-
-	box := (*box)(mto.buffer[i])
+	index := mto.tail % mto.capacity
+	box := (*box)(mto.buffer[index])
 
 	// never written before.
 	if box == nil {
@@ -54,7 +53,7 @@ func (mto *manyToOne) Shift() (Generic, bool) {
 	if box.index > mto.tail {
 		// set the tail so next shift box.data will be valid
 		mto.tail = box.index
-		return nil, true
+		return nil, false
 	}
 
 	mto.tail++
