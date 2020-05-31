@@ -1,6 +1,9 @@
 <h1 align="center"><img height="250" src="https://raw.githubusercontent.com/negrel/ringo/master/.github/atom.svg"></h1>
 
 <p align="center">
+	<a href="https://pkg.go.dev/github.com/negrel/ringo">
+		<img src="https://godoc.org/github.com/negrel/ringo?status.svg">
+	</a>
 	<a href="https://goreportcard.com/badge/github.com/negrel/ringo">
 		<img src="https://goreportcard.com/badge/github.com/negrel/ringo">
 	</a>
@@ -49,8 +52,10 @@ go mod init
 ```
 
 ## Getting started
+*The documentation is available [here](https://pkg.go.dev/github.com/negrel/ringo).*
 
-Take a look at the [examples](https://github.com/negrel/ringo/tree/master/example) and especially the *"wrapper"* one, it is recommended to use a wrapper for type safety.
+Take a look at the [examples](https://github.com/negrel/ringo/tree/master/example) and especially the *"wrapper"* one, it is recommended to use a **wrapper** for type safety.
+All ring buffers share the same **API**.
 
 ## :zap: Benchmarks
 i5-8250U @ 8x 3.4GHz:
