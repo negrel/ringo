@@ -23,7 +23,6 @@ func (mto *manyToOne) Cap() uint32 {
 	return uint32(mto.capacity)
 }
 
-// Push the given data to the buffer.
 func (mto *manyToOne) Push(data Generic) {
 	head := atomic.AddUint64(&mto.head, 1)
 	index := head % mto.capacity
@@ -36,8 +35,6 @@ func (mto *manyToOne) Push(data Generic) {
 	atomic.SwapPointer(&mto.buffer[index], Generic(&box))
 }
 
-// Push the given data to the buffer and return if
-// the data is valid.
 func (mto *manyToOne) Shift() (Generic, bool) {
 	i := mto.tail % mto.capacity
 

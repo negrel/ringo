@@ -5,7 +5,12 @@ type Buffer interface {
 	// The capacity of the buffer.
 	Cap() uint32
 
+	// Push the given data to the buffer.
+	// It may overwrite some unreaded data.
 	Push(Generic)
+
+	// Shift data from buffer and return if
+	// the data is valid.
 	Shift() (Generic, bool)
 }
 

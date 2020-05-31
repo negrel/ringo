@@ -15,7 +15,6 @@ func (oto *oneToOne) Cap() uint32 {
 	return uint32(oto.capacity)
 }
 
-// Push the given data to the buffer.
 func (oto *oneToOne) Push(data Generic) {
 	index := oto.head % uint64(oto.capacity)
 
@@ -29,8 +28,6 @@ func (oto *oneToOne) Push(data Generic) {
 	oto.buffer[index] = Generic(&box)
 }
 
-// Push the given data to the buffer and return if
-// the data is valid.
 func (oto *oneToOne) Shift() (Generic, bool) {
 	i := oto.tail % oto.capacity
 	oto.tail++

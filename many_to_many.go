@@ -11,7 +11,8 @@ type manyToMany struct {
 // ManyToMany return an efficient, thread-safe ring buffer
 // with the given capacity. ManyToMany buffers are safe for
 // concurrent writers and concurrent readers. This buffer is slower
-// because it use the Mutex of the sync package.
+// because it use the Mutex of the sync package, for faster ring buffer
+// take a look at the other concurrent buffers.
 func ManyToMany(capacity uint32) Buffer {
 	return &manyToMany{
 		buffer: &oneToOne{
