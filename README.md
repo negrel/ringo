@@ -1,9 +1,6 @@
 <h1 align="center"><img height="250" src="https://raw.githubusercontent.com/negrel/ringo/master/.github/atom.svg"></h1>
 
 <p align="center">
-	<a href="https://github.com/avelino/awesome-go">
-		<img alt="Mentioned in Awesome Go" src="https://awesome.re/mentioned-badge.svg">
-	</a>
 	<a href="https://pkg.go.dev/github.com/negrel/ringo">
 		<img src="https://godoc.org/github.com/negrel/ringo?status.svg">
 	</a>
