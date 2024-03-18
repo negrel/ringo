@@ -25,12 +25,14 @@ but aims to provide a more safe (no unsage and type safe) alternative.
 - **Thread-safe** : manipulated via [atomics](https://pkg.go.dev/sync/atomic) operations.
 - **Type-safe** : buffers are implemented using [Go 1.18 generics](https://go.dev/doc/tutorial/generics).
 
-## Installation
+## Getting started
+
+### Installation
 
 Using **go get** :
 
 ```bash
-go get -u github.com/negrel/ringo.git
+go get github.com/negrel/ringo.git
 ```
 
 Using **go modules** :
@@ -53,8 +55,37 @@ then
 go mod tidy
 ```
 
-## Getting started
-*The documentation is available [here](https://pkg.go.dev/github.com/negrel/ringo).*
+### Example: Basic Use
+
+```go
+buffer := ringo.NewManyToOne[int](1024)
+
+go func() {
+    for i := 0; i < math.MaxInt; i++ {
+        buffer.Push(i)
+    }
+}()
+
+ctx, cancel := context.WithCancel(context.Background())
+go func() {
+    time.Sleep(time.Minute)
+    cancel()
+}()
+
+poller := ringo.NewPoller(buffer, ringo.WithPollingContext[int](ctx))
+for {
+    next, done, dropped := poller.Next()
+    // Writer is faster than reader, some data was overwritten.
+    if dropped > 0 {
+        log.Printf("lost %v int", dropped)
+    }
+    // Context canceled.
+    if done {
+        break
+    }
+    log.Print(next)
+}
+```
 
 ## :zap: Benchmarks
 
@@ -74,6 +105,14 @@ BenchmarkManyToOnePoller-16     37656290                34.64 ns/op           16
 PASS
 ok      github.com/negrel/ringo 6.841s
 ```
+
+## Known issues
+
+If a diode was to be written to 18446744073709551615+1 times it would overflow
+a uint64. This will cause problems if the size of the diode is not a power of
+two (2^x). If you write into a diode at the rate of one message every
+nanosecond, without restarting your process, it would take you 584.54 years to
+encounter this issue.
 
 ## :stars: Show your support
 
