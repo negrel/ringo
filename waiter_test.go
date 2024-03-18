@@ -20,7 +20,7 @@ func TestWaiter(t *testing.T) {
 		}()
 
 		start := time.Now()
-		next, dropped := waiter.Next()
+		next, done, dropped := waiter.Next()
 		end := time.Now()
 
 		if next != expected {
@@ -31,6 +31,9 @@ func TestWaiter(t *testing.T) {
 		}
 		if end.Sub(start) < 500*time.Millisecond || end.Sub(start) > 550*time.Millisecond {
 			t.Fatal("waiter is slow")
+		}
+		if done {
+			t.Fatal("waiter done without context cancellation")
 		}
 	})
 
@@ -46,7 +49,7 @@ func TestWaiter(t *testing.T) {
 		}()
 
 		start := time.Now()
-		next, dropped := waiter.Next()
+		next, done, dropped := waiter.Next()
 		end := time.Now()
 
 		if end.Sub(start) < 500*time.Millisecond {
@@ -57,6 +60,9 @@ func TestWaiter(t *testing.T) {
 		}
 		if dropped != 0 {
 			t.Fatal("buffer reported some dropped value")
+		}
+		if !done {
+			t.Fatal("waiter not done after context cancellation")
 		}
 	})
 }

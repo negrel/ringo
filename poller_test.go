@@ -15,12 +15,15 @@ func TestPoller(t *testing.T) {
 		expected := rand.Int()
 
 		_ = poller.Push(expected)
-		next, dropped := poller.Next()
+		next, done, dropped := poller.Next()
 		if next != expected {
 			t.Fatalf("polled value doesn't match expected")
 		}
 		if dropped != 0 {
 			t.Fatal("buffer reported some dropped value")
+		}
+		if done {
+			t.Fatal("poller done without context cancellation")
 		}
 	})
 
@@ -36,7 +39,7 @@ func TestPoller(t *testing.T) {
 		}()
 
 		start := time.Now()
-		next, dropped := poller.Next()
+		next, done, dropped := poller.Next()
 		end := time.Now()
 		if next != expected {
 			t.Fatalf("polled value doesn't match expected")
@@ -46,6 +49,9 @@ func TestPoller(t *testing.T) {
 		}
 		if end.Sub(start) < time.Second {
 			t.Fatal("poller didn't used given polling interval")
+		}
+		if done {
+			t.Fatal("poller done without context cancellation")
 		}
 	})
 
@@ -64,7 +70,7 @@ func TestPoller(t *testing.T) {
 		}()
 
 		start := time.Now()
-		next, dropped := poller.Next()
+		next, done, dropped := poller.Next()
 		end := time.Now()
 
 		if end.Sub(start) < 500*time.Millisecond {
@@ -75,6 +81,9 @@ func TestPoller(t *testing.T) {
 		}
 		if dropped != 0 {
 			t.Fatal("buffer reported some dropped value")
+		}
+		if !done {
+			t.Fatal("poller not done after context cancellation")
 		}
 	})
 }

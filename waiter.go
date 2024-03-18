@@ -61,7 +61,7 @@ func (w *Waiter[T]) broadcast() {
 // Next returns the next data point on the wrapped ring buffer. If there is no new
 // data, it will wait for Set to be called or the context to be done. If the
 // context is done, then default value of T will be returned.
-func (w *Waiter[T]) Next() (next T, dropped int) {
+func (w *Waiter[T]) Next() (next T, done bool, dropped int) {
 	var ok bool
 	for {
 		next, ok, dropped = w.Buffer.TryNext()
@@ -70,6 +70,7 @@ func (w *Waiter[T]) Next() (next T, dropped int) {
 		}
 		select {
 		case <-w.ctx.Done():
+			done = true
 			return
 		case <-w.c:
 		}

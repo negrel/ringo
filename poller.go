@@ -49,12 +49,13 @@ func NewPoller[T any](buf Buffer[T], opts ...PollerConfigOption[T]) Poller[T] {
 
 // Next polls the buffer until data is available or until the context is done.
 // If the context is done, then default value of T will be returned.
-func (p *Poller[T]) Next() (next T, dropped int) {
+func (p *Poller[T]) Next() (next T, done bool, dropped int) {
 	var ok bool
 	for {
 		next, ok, dropped = p.Buffer.TryNext()
 		if !ok {
 			if p.isDone() {
+				done = true
 				return
 			}
 
