@@ -87,6 +87,37 @@ for {
 }
 ```
 
+## Storage Layer
+
+### OneToOne
+
+OneToOne ring buffer isn't implemented as my private implementation didn't
+provide any performance gain. Use ManyToOne.
+
+### ManyToOne
+
+The ManyToOne ring buffer is optimized for many producing (invoking Push())
+go-routines and a single consuming (invoking TryNext()) go-routine. It is not
+thread safe for multiple readers.
+
+## Access Layer
+
+### Poller
+
+The Poller uses polling via time.Sleep(...) when Next() is invoked. While
+polling might seem sub-optimal, it allows the producer to be completely
+decoupled from the consumer. If you require very minimal push back on the
+producer, then the Poller is a better choice. However, if you require several
+ring buffers (e.g. one per connected client), then having several go-routines polling
+(sleeping) may be hard on the scheduler.
+
+### Waiter
+
+The Waiter uses a conditional mutex to manage when the reader is alerted of new
+data. While this method is great for the scheduler, it does have extra overhead
+for the producer. Therefore, it is better suited for situations where you have
+several ring buffers and can afford slightly slower producers.
+
 ## :zap: Benchmarks
 
 ```
@@ -108,9 +139,9 @@ ok      github.com/negrel/ringo 6.841s
 
 ## Known issues
 
-If a diode was to be written to 18446744073709551615+1 times it would overflow
-a uint64. This will cause problems if the size of the diode is not a power of
-two (2^x). If you write into a diode at the rate of one message every
+If a ring buffer was to be written to 18446744073709551615+1 times it would overflow
+a uint64. This will cause problems if the size of the ring buffer is not a power of
+two (2^x). If you write into a ring buffer at the rate of one message every
 nanosecond, without restarting your process, it would take you 584.54 years to
 encounter this issue.
 
