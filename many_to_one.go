@@ -1,69 +1,82 @@
 package ringo
 
 import (
+	"math"
 	"sync/atomic"
 )
 
-type manyToOne buffer
+var _ Buffer[any] = &ManyToOne[any]{}
 
-// ManyToOne return an efficient ring buffer with the given
+// ManyToOne define a ring buffer safe for use by concurrent writers and a
+// single reader.
+type ManyToOne[T any] struct {
+	buffer     []atomic.Pointer[box[T]]
+	writeIndex atomic.Uint64
+	// Also atomic as we read it on Push().
+	readIndex atomic.Uint64
+}
+
+// NewManyToOne return a new ManyToOne ring buffer with the given
 // capacity. The buffer is safe for one reader and multiple writer.
-// The ManyToOne buffer will panic if you use the -race flag
-// because you must use only one reader, no runtime check is performed for
-// better performance.
-func ManyToOne(capacity uint32) Buffer {
-	return &manyToOne{
-		head:     ^uint64(0),
-		buffer:   make([]Generic, capacity),
-		capacity: uint64(capacity),
+func NewManyToOne[T any](capacity int) *ManyToOne[T] {
+	mto := &ManyToOne[T]{
+		buffer: make([]atomic.Pointer[box[T]], capacity),
 	}
+
+	// First increment will overflow to 0.
+	mto.writeIndex.Store(math.MaxUint64)
+
+	return mto
 }
 
-func (mto *manyToOne) Cap() uint32 {
-	return uint32(mto.capacity)
+// Size implements Buffer.
+func (mto *ManyToOne[T]) Size() int {
+	return len(mto.buffer)
 }
 
-func (mto *manyToOne) Push(data Generic) (overwrite bool) {
-	head := atomic.AddUint64(&mto.head, 1)
-	index := head % mto.capacity
+// Push implements Buffer.
+func (mto *ManyToOne[T]) Push(data T) (overwrite bool) {
+	writeIndex := mto.writeIndex.Add(1)
+	index := writeIndex % uint64(mto.Size())
 
-	pBox := box{
-		index: head,
+	box := box[T]{
+		index: writeIndex,
 		data:  data,
 	}
 
-	tail1 := atomic.LoadUint64(&mto.tail)
-	old := (*box)(atomic.SwapPointer(&mto.buffer[index], Generic(&pBox)))
-	tail2 := atomic.LoadUint64(&mto.tail)
+	tail1 := mto.readIndex.Load()
+	old := mto.buffer[index].Swap(&box)
 
 	if old == nil {
 		return false
 	}
 
-	return old.index > tail1 || old.index > tail2
+	return old.index > tail1
 }
 
-func (mto *manyToOne) Shift() (Generic, bool) {
-	index := mto.tail % mto.capacity
-	box := (*box)(mto.buffer[index])
+// Shift implements Buffer.
+func (mto *ManyToOne[T]) TryNext() (result T, ok bool, dropped int) {
+	readIndex := mto.readIndex.Load()
+	index := readIndex % uint64(mto.Size())
+	box := mto.buffer[index].Load()
 
 	// never written before.
 	if box == nil {
-		return nil, false
+		return
 	}
 
-	// already readed
-	if box.index < mto.tail {
-		return nil, false
+	// already read
+	if box.index < mto.readIndex.Load() {
+		return
 	}
 
 	// cell have been overwritten
-	if box.index > mto.tail {
+	if box.index > readIndex {
+		dropped = int(box.index - readIndex)
 		// set the tail so next shift box.data will be valid
-		mto.tail = box.index
-		return nil, false
+		mto.readIndex.Store(box.index)
 	}
 
-	mto.tail++
-	return box.data, true
+	mto.readIndex.Add(1)
+	return box.data, true, dropped
 }
