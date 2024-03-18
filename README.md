@@ -12,16 +12,18 @@
 	</a>
 </p>
 
-# :atom_symbol: Ringo - Efficient ring buffers
-*Atomic buffers are thread safe, lock free, efficient ring buffers.*  
-Ringo is inspired by [go-diodes](https://github.com/cloudfoundry/go-diodes/) but is faster.
+# :atom_symbol: Ringo - Fast, lock free ring buffers.
+
+A thread safe, lock free, efficient ring buffer library.
+
+Ringo is heavily inspired by [go-diodes](https://github.com/cloudfoundry/go-diodes/) 
+but aims to provide a more safe (no unsage and type safe) alternative.
 
 ## Features
 
-- **Easy to use** : Check the [examples](https://github.com/negrel/ringo/tree/master/example)
 - :zap: [**Efficient**](https://github.com/negrel/ringo#zap-benchmarks)
 - **Thread-safe** : manipulated via [atomics](https://pkg.go.dev/sync/atomic) operations.
-- **Untyped** : step around type safety thanks to the standard [unsafe](https://pkg.go.dev/unsafe) package.
+- **Type-safe** : buffers are implemented using [Go 1.18 generics](https://go.dev/doc/tutorial/generics).
 
 ## Installation
 
@@ -48,27 +50,29 @@ func main() {
 then
 
 ```bash
-go mod init
+go mod tidy
 ```
 
 ## Getting started
 *The documentation is available [here](https://pkg.go.dev/github.com/negrel/ringo).*
 
-Take a look at the [examples](https://github.com/negrel/ringo/tree/master/example) and especially the *"wrapper"* one, it is recommended to use a **wrapper** for type safety.
-All ring buffers share the same **API**.
-
 ## :zap: Benchmarks
-i5-8250U @ 8x 3.4GHz:
 
 ```
 goos: linux
 goarch: amd64
 pkg: github.com/negrel/ringo
-BenchmarkOneToOne-8             20352619                54.3 ns/op             8 B/op          1 allocs/op
-BenchmarkManyToOne-8            11924336                85.8 ns/op            24 B/op          2 allocs/op
-BenchmarkManyToMany-8            2736511               441 ns/op               8 B/op          1 allocs/op
+cpu: AMD Ryzen 7 7840U w/ Radeon  780M Graphics
+BenchmarkRing
+BenchmarkRing-16                200605705                6.669 ns/op          16 B/op          0 allocs/op
+BenchmarkManyToOne
+BenchmarkManyToOne-16           36673826                28.27 ns/op           16 B/op          1 allocs/op
+BenchmarkManyToOneWaiter
+BenchmarkManyToOneWaiter-16     32007580                35.13 ns/op           16 B/op          1 allocs/op
+BenchmarkManyToOnePoller
+BenchmarkManyToOnePoller-16     37656290                34.64 ns/op           16 B/op          1 allocs/op
 PASS
-ok      github.com/negrel/ringo 5.149s
+ok      github.com/negrel/ringo 6.841s
 ```
 
 ## :stars: Show your support
