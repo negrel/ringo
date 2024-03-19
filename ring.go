@@ -5,7 +5,7 @@ type Buffer[T any] interface {
 	// Size returns size of internal buffer.
 	Size() int
 	// Push data to buffer.
-	Push(data T) bool
+	Push(data T)
 	// Read value from buffer and returns it.
 	// Returned boolean is true if a value was successfully read.
 	// Int correspond to the number of dropped value since last read.
@@ -34,14 +34,11 @@ func (r *Ring[T]) Size() int {
 }
 
 // Push implements Buffer.
-func (r *Ring[T]) Push(data T) (overwrite bool) {
+func (r *Ring[T]) Push(data T) {
 	r.writeIndex++
 	index := r.writeIndex % uint64(r.Size())
 
-	old := r.buffer[index]
 	r.buffer[index] = box[T]{r.writeIndex, data}
-
-	return old.index > r.readIndex
 }
 
 // TryNext implements Buffer.

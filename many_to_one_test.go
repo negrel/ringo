@@ -13,10 +13,7 @@ func TestManyToOne(t *testing.T) {
 			buffer := NewManyToOne[int](size)
 			for i := 0; i < size; i++ {
 				v := rand.Int()
-				overwrite := buffer.Push(v)
-				if overwrite {
-					t.Fatal("unexpected overwrite")
-				}
+				buffer.Push(v)
 
 				r, ok, dropped := buffer.TryNext()
 				if !ok {
@@ -38,10 +35,7 @@ func TestManyToOne(t *testing.T) {
 
 			for i := 0; i < size; i++ {
 				pushedData[i] = rand.Int()
-				overwrite := buffer.Push(pushedData[i])
-				if overwrite {
-					t.Fatal("unexpected overwrite")
-				}
+				buffer.Push(pushedData[i])
 			}
 
 			for i := 0; i < size; i++ {
@@ -123,6 +117,26 @@ func TestManyToOne(t *testing.T) {
 			t.Fatal("buffer reported some dropped value:", dropped)
 		}
 		if next != 0 {
+			t.Fatal("value read from buffer doesn't match expected")
+		}
+	})
+
+	t.Run("DroppedData", func(t *testing.T) {
+		size := 100
+		buffer := NewManyToOne[int](size)
+
+		for i := 0; i < 1000; i++ {
+			buffer.Push(i)
+		}
+
+		next, ok, dropped := buffer.TryNext()
+		if !ok {
+			t.Fatal("TryNext() returned true, expecting false")
+		}
+		if dropped != 900 {
+			t.Fatal("buffer reported some dropped value:", dropped)
+		}
+		if next != 900 {
 			t.Fatal("value read from buffer doesn't match expected")
 		}
 	})

@@ -16,7 +16,7 @@ func TestWaiter(t *testing.T) {
 
 		go func() {
 			time.Sleep(500 * time.Millisecond)
-			_ = waiter.Push(expected)
+			waiter.Push(expected)
 		}()
 
 		start := time.Now()

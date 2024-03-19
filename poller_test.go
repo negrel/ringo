@@ -14,7 +14,7 @@ func TestPoller(t *testing.T) {
 
 		expected := rand.Int()
 
-		_ = poller.Push(expected)
+		poller.Push(expected)
 		next, done, dropped := poller.Next()
 		if next != expected {
 			t.Fatalf("polled value doesn't match expected")
@@ -35,7 +35,7 @@ func TestPoller(t *testing.T) {
 
 		go func() {
 			time.Sleep(10 * time.Millisecond)
-			_ = poller.Push(expected)
+			poller.Push(expected)
 		}()
 
 		start := time.Now()

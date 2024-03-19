@@ -43,11 +43,9 @@ func NewWaiter[T any](buffer Buffer[T], opts ...WaiterConfigOption[T]) Waiter[T]
 
 // Push invokes the wrapped Buffer's Push with the given data and uses broadcast
 // to wake up any readers.
-func (w *Waiter[T]) Push(data T) bool {
-	o := w.Buffer.Push(data)
+func (w *Waiter[T]) Push(data T) {
+	w.Buffer.Push(data)
 	w.broadcast()
-
-	return o
 }
 
 // broadcast sends to the channel if it can.
