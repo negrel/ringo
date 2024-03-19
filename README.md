@@ -124,17 +124,17 @@ several ring buffers and can afford slightly slower producers.
 goos: linux
 goarch: amd64
 pkg: github.com/negrel/ringo
-cpu: AMD Ryzen 7 7840U w/ Radeon  780M Graphics
+cpu: AMD Ryzen 7 7840U w/ Radeon  780M Graphics     
 BenchmarkRing
-BenchmarkRing-16                200605705                6.669 ns/op          16 B/op          0 allocs/op
+BenchmarkRing-16                206156005                6.042 ns/op          16 B/op          0 allocs/op
 BenchmarkManyToOne
-BenchmarkManyToOne-16           36673826                28.27 ns/op           16 B/op          1 allocs/op
+BenchmarkManyToOne-16           40134350                30.07 ns/op           16 B/op          1 allocs/op
 BenchmarkManyToOneWaiter
-BenchmarkManyToOneWaiter-16     32007580                35.13 ns/op           16 B/op          1 allocs/op
+BenchmarkManyToOneWaiter-16     33045910                33.27 ns/op           16 B/op          1 allocs/op
 BenchmarkManyToOnePoller
-BenchmarkManyToOnePoller-16     37656290                34.64 ns/op           16 B/op          1 allocs/op
+BenchmarkManyToOnePoller-16     34575518                34.47 ns/op           16 B/op          1 allocs/op
 PASS
-ok      github.com/negrel/ringo 6.841s
+ok      github.com/negrel/ringo 7.718s
 ```
 
 ## Known issues
