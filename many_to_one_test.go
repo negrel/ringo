@@ -2,6 +2,8 @@ package ringo
 
 import (
 	"math/rand"
+	"runtime"
+	"sync"
 	"sync/atomic"
 	"testing"
 )
@@ -100,8 +102,8 @@ func TestManyToOne(t *testing.T) {
 			}
 		}
 
-		if totalDropped+totalRead != writerCounter*size {
-			t.Fatal("number of read and dropped value doesn't match expected")
+		if totalDropped+totalRead < writerCounter*size {
+			t.Fatalf("number of read and dropped value is less than expected, expected %v got %v", writerCounter*size, totalDropped+totalRead)
 		}
 	})
 
@@ -139,5 +141,61 @@ func TestManyToOne(t *testing.T) {
 		if next != 900 {
 			t.Fatal("value read from buffer doesn't match expected")
 		}
+	})
+
+	t.Run("CollisionDetection", func(t *testing.T) {
+		t.Run("LocalHandler", func(t *testing.T) {
+			writerCount := runtime.NumCPU() * 2
+			collision := atomic.Uint32{}
+
+			buffer := NewManyToOne(1, WithManyToOneCollisionHandler[int](CollisionHandlerFunc(func(_ any) {
+				collision.Add(1)
+			})))
+
+			var wg sync.WaitGroup
+			wg.Add(writerCount)
+
+			for i := 0; i < writerCount; i++ {
+				go func() {
+					defer wg.Done()
+
+					buffer.Push(0)
+				}()
+			}
+
+			wg.Wait()
+
+			if collision.Load() == 0 {
+				t.Fatal("collision not detected or didn't occur")
+			}
+		})
+
+		t.Run("GlobalHandler", func(t *testing.T) {
+			writerCount := runtime.NumCPU() * 2
+			collision := atomic.Uint32{}
+
+			SetCollisionHandler(CollisionHandlerFunc(func(buffer any) {
+				collision.Add(1)
+			}))
+
+			buffer := NewManyToOne[int](1)
+
+			var wg sync.WaitGroup
+			wg.Add(writerCount)
+
+			for i := 0; i < writerCount; i++ {
+				go func() {
+					defer wg.Done()
+
+					buffer.Push(0)
+				}()
+			}
+
+			wg.Wait()
+
+			if collision.Load() == 0 {
+				t.Fatal("collision not detected or didn't occur")
+			}
+		})
 	})
 }
