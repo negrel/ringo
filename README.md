@@ -17,7 +17,7 @@
 A thread safe, lock free, efficient ring buffer library.
 
 Ringo is heavily inspired by [go-diodes](https://github.com/cloudfoundry/go-diodes/) 
-but aims to provide a more safe (no unsafe and type safe) alternative.
+but aims to provide a more safe (no unsafe) alternative.
 
 ## Features
 
