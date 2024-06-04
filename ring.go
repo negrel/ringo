@@ -21,6 +21,10 @@ type Ring[T any] struct {
 }
 
 func NewRing[T any](size int) *Ring[T] {
+	if size <= 0 {
+		panic("ring buffer size can't be negative or zero")
+	}
+
 	return &Ring[T]{
 		buffer:     make([]box[T], size),
 		writeIndex: 0,

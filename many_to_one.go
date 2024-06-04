@@ -30,6 +30,10 @@ func WithManyToOneCollisionHandler[T any](ch CollisionHandler) ManyToOneOption[T
 // NewManyToOne return a new ManyToOne ring buffer with the given
 // size. The buffer is safe for one reader and multiple writer.
 func NewManyToOne[T any](size int, options ...ManyToOneOption[T]) *ManyToOne[T] {
+	if size <= 0 {
+		panic("ring buffer size can't be negative or zero")
+	}
+
 	mto := &ManyToOne[T]{
 		buffer:           make([]atomic.Pointer[box[T]], size),
 		collisionHandler: *globalCollisionHandler.Load(),
